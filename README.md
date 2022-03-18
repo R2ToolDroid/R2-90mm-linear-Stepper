@@ -10,12 +10,12 @@
 
 # Nano to L9110
 
-Stepper Module 
- IN B1 A   11 // 14
- IN B1 B   10 // 15
- IN A1 A   8  // 16
- IN A1 B   9  // 17
+Stepper Module NANO  // Pro Micro
+ - IN B1 A   11 // 2
+ - IN B1 B   10 // 3
+ - IN A1 A   8  // 4
+ - IN A1 B   9  // 5
 
  Motor  
- BLK BLU 1
- YEL RED 2
+ - BLK BLU 1
+ - YEL RED 2
