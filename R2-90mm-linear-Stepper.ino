@@ -55,7 +55,6 @@ void setup() {
   // set the speed at 60 rpm:
 
   Serial.begin(9600);
-  delay(1000);
   Serial.println("Start");
   
   tast=analogRead(A1);
@@ -86,8 +85,7 @@ void setup() {
   
 
   
-  if (DEBUG){
-  
+  if (DEBUG){ 
   Serial.println("R2-Stepper-90mm-dome-02.ino");
   Serial.print("Tast");
   Serial.println(tast);
@@ -103,14 +101,15 @@ void checkData(String cmd){
 
    // Serial.println(".....POS?");
    // Serial.println(lmtsw);
-   
 
     if(cmd == ":OP01"){
       if (lmtsw == false){
-        Serial.println("Kill Servo Power");
-        delay(2000);
-        Move("out");
+        
         Serial.println(".....OUT");
+        Move("out");
+        delay(2000);
+        Serial.println("Kill Servo Power");
+       
        // Serial.print("Position Start ");
         //Serial.println("Kill Servo Power");
         cmd="";
@@ -119,8 +118,8 @@ void checkData(String cmd){
        // Serial.print("Position Start ");
        // Serial.println(StartPos);
         Move("in");
-        delay(2000);
-        Serial.println("enable ServoPower");
+        
+        
         cmd="";
       }
     }
@@ -221,14 +220,11 @@ void loop() {
     //Serial.println(F("The limit switch: TOUCHED"));
    
     stepper.setCurrentPosition(0); // set position
-    //stepper.moveTo(targetPos);
-
-    //Serial.print("position ");
-    //Serial.println(targetPos);
-
+  
     if (targetPos == MAX_POSITION){
       Serial.print("Startpunkt");
       StartPos = true;
+      Serial.println("enable ServoPower");
     }
    
   }
