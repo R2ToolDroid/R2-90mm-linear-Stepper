@@ -53,10 +53,19 @@ float tast;
 
 void setup() {
   // set the speed at 60 rpm:
+
+  Serial.begin(9600);
+  delay(1000);
+  Serial.println("Start");
+  
   tast=analogRead(A1);
+  
   actionSwitch.setDebounceTime(50); // set debounce time to 50 milliseconds
  
   limitSwitch.setDebounceTime(50); // set debounce time to 50 milliseconds
+
+
+  
 
   stepper.setMaxSpeed(Speed);   // set the maximum speed
   stepper.setAcceleration(2000.0); // set acceleration
@@ -73,14 +82,52 @@ void setup() {
   } 
   //stepper.moveTo(MAX_POSITION);
   // initialize the serial port
+
+  
+
+  
   if (DEBUG){
-  Serial.begin(9600);
+  
   Serial.println("R2-Stepper-90mm-dome-02.ino");
   Serial.print("Tast");
   Serial.println(tast);
   Serial.print("Position Start ");
   Serial.println(StartPos);
   } 
+}
+
+
+void checkData(String cmd){
+
+    bool lmtsw = digitalRead(A1); //Limitswitch
+
+   // Serial.println(".....POS?");
+   // Serial.println(lmtsw);
+   
+
+    if(cmd == ":OP01"){
+      if (lmtsw == false){
+        Serial.println("Kill Servo Power");
+        delay(2000);
+        Move("out");
+        Serial.println(".....OUT");
+       // Serial.print("Position Start ");
+        //Serial.println("Kill Servo Power");
+        cmd="";
+      } else {
+        Serial.println(".....IN");
+       // Serial.print("Position Start ");
+       // Serial.println(StartPos);
+        Move("in");
+        delay(2000);
+        Serial.println("enable ServoPower");
+        cmd="";
+      }
+    }
+    
+    Move(cmd);
+
+  
 }
 
 void readCom(){
@@ -93,7 +140,8 @@ void readCom(){
             Serial.println(data);
            
         }
-        Move(data);
+        checkData(data);
+       // Move(data);
         data = "";
         Serial.flush();
     } // end serial
