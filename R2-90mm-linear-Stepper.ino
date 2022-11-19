@@ -42,18 +42,52 @@ bool StartPos = false;
 #define IN 2
 #define STOP 3
 
+#define relais  A10
+
 
 String data ;
 String cmd ;
 int lcmd = IN;
 
-int Speed = 500;  //700 OK  400 OK
+int Speed = 600;  //500 default 700 OK  400 OK
 
 float tast;
 
+void Kill(bool ON){
+    if(ON){
+      digitalWrite(relais, LOW); // Unterbrechen
+    } else {
+      digitalWrite(relais, HIGH); 
+    }
+  
+}
+
+
 void setup() {
   // set the speed at 60 rpm:
+
+  Serial.begin(9600);
+  
+  Serial1.begin(9600);
+  
+  Serial.println("Start");
+  
   tast=analogRead(A1);
+
+  pinMode(relais, OUTPUT);
+
+
+  Kill(true);
+
+  delay(1000);//...eine Sekunde warten
+
+  Kill(false);
+  
+  //delay(1000); //...und eine Sekunde warten.
+
+
+  
+  
   actionSwitch.setDebounceTime(50); // set debounce time to 50 milliseconds
  
   limitSwitch.setDebounceTime(50); // set debounce time to 50 milliseconds
@@ -69,18 +103,57 @@ void setup() {
   stepper.moveTo(targetPos);
   //stepper.setCurrentPosition(0); // set position
   StartPos = false;
-  Serial.println("Reset");
+  //Serial.println("Reset");
   } 
   //stepper.moveTo(MAX_POSITION);
   // initialize the serial port
-  if (DEBUG){
-  Serial.begin(9600);
+
+  
+
+  
+  if (DEBUG){ 
   Serial.println("R2-Stepper-90mm-dome-02.ino");
   Serial.print("Tast");
   Serial.println(tast);
   Serial.print("Position Start ");
   Serial.println(StartPos);
   } 
+}
+
+
+void checkData(String cmd){
+
+    bool lmtsw = digitalRead(A1); //Limitswitch
+
+   // Serial.println(".....POS?");
+   // Serial.println(lmtsw);
+
+    if(cmd == ":OP01"){
+      if (lmtsw == false){
+        
+        //Serial.println(".....OUT");
+        Move("out");
+        delay(2000);
+        //Serial.println("Kill Servo Power");
+        Kill(true);
+       
+       // Serial.print("Position Start ");
+        //Serial.println("Kill Servo Power");
+        cmd="";
+      } else {
+        //Serial.println(".....IN");
+       // Serial.print("Position Start ");
+       // Serial.println(StartPos);
+        Move("in");
+        
+        
+        cmd="";
+      }
+    }
+    
+    Move(cmd);
+
+  
 }
 
 void readCom(){
@@ -93,9 +166,29 @@ void readCom(){
             Serial.println(data);
            
         }
-        Move(data);
+        checkData(data);
+       // Move(data);
         data = "";
         Serial.flush();
+    } // end serial
+}
+
+
+
+void readCom1(){
+  
+  if(Serial1.available() > 0)
+    {
+        data = Serial1.readStringUntil('\n');
+        if (DEBUG){
+            Serial.print (F( "I received from COM1 Serial: "));
+            Serial.println(data);
+           
+        }
+        checkData(data);
+       // Move(data);
+        data = "";
+        Serial1.flush();
     } // end serial
 }
 
@@ -107,7 +200,7 @@ void Move(String cmd) {
   //Serial.println(cmd);
   
   if (cmd == "in") {  
-  Serial.println("clockwise");
+  //Serial.println("clockwise");
   StartPos = false;
   stepper.moveTo(targetPos);
   lcmd = IN;
@@ -115,14 +208,14 @@ void Move(String cmd) {
   }
   if (cmd == "out") {
   // step one revolution in the other direction:
-  Serial.println("counterclockwise");
+  //Serial.println("counterclockwise");
   stepper.moveTo(-targetPos);
   lcmd = OUT;
   }
 
   if (cmd == "stop") {
   // step one revolution in the other direction:
-  Serial.println("Stop");
+  //Serial.println("Stop");
   stepper.setCurrentPosition(0); // set position
   lcmd = STOP;
   }
@@ -136,29 +229,31 @@ void loop() {
  
   readCom();
 
+  readCom1();
+
   limitSwitch.loop(); // MUST call the loop() function first
   actionSwitch.loop(); // MUST call the loop() function first
 
   if (actionSwitch.isPressed()) {
-    Serial.println("Action");
-       Serial.print("Startpunkt");
-         Serial.println(lcmd);
+    //Serial.println("Action");
+       //Serial.print("Startpunkt");
+         //Serial.println(lcmd);
          switch (lcmd){
             case (IN):
-            Serial.println("Move Out");
+            //Serial.println("Move Out");
             Move("out");
             break;
             case (OUT):
-            Serial.println("Move IN");
+            //Serial.println("Move IN");
             Move("in");
             break;
             case (STOP):
-            Serial.println("Move IN");
+            //Serial.println("Move IN");
             Move("in");
             break;
 
             default:
-            Serial.println("Move IN default");
+            //Serial.println("Move IN default");
             Move("in");
 
             break;
@@ -173,14 +268,12 @@ void loop() {
     //Serial.println(F("The limit switch: TOUCHED"));
    
     stepper.setCurrentPosition(0); // set position
-    //stepper.moveTo(targetPos);
-
-    //Serial.print("position ");
-    //Serial.println(targetPos);
-
+  
     if (targetPos == MAX_POSITION){
-      Serial.print("Startpunkt");
+      //Serial.print("Startpunkt");
       StartPos = true;
+      //Serial.println("enable ServoPower");
+      Kill(false);
     }
    
   }
